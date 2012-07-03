@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="example" default="compile" basedir="./">
+
+  <!-- import properties -->
+  <property file="build.properties" />
+
+  <!-- settings -->
+  <property name="main.src"         value="${basedir}/src/main"/>
+  <property name="module.src"       value="${basedir}/src/module"/>
+  <property name="target"           value="${basedir}/target"/>
+  <property name="main.target"      value="${target}/main"/>
+  <property name="module.target"    value="${target}/module"/>
+  <property name="javac.args"       value="-Xlint:unchecked -Xlint:deprecation"/>
+
+  <!-- ivy settings -->
+  <property name="ivy.version" value="2.2.0"/>
+  <property name="ivy.url"     value="http://repo2.maven.org/maven2/org/apache/ivy/ivy" />
+  <property name="ivy.lib"     value="${basedir}/lib"/>
+  <property name="ivy.jar"     value="${ivy.lib}/ivy-${ivy.version}.jar"/>
+
+  <!-- define classpath -->
+  <path id="main.classpath">
+    <pathelement location="${main.target}"/>
+    <fileset dir="${ivy.lib}">
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+
+  <path id="module.classpath">
+    <pathelement location="${module.target}"/>
+    <fileset dir="${ivy.lib}">
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+
+  <!-- Tasks -->
+
+  <target name="init">
+    <tstamp/>
+    <mkdir dir="${target}"/>
+    <mkdir dir="${main.target}"/>
+    <mkdir dir="${module.target}"/>
+    <mkdir dir="${ivy.lib}"/>
+    <available file="${ivy.jar}" property="has.ivy" />
+  </target>
+
+  <!-- for ivy -->
+  <target name="get.ivy" depends="init" unless="has.ivy">
+    <delete dir="${ivy.lib}" includes="ivy-*.jar" excludes="ivy-${ivy.version}.jar"/>
+    <get src="${ivy.url}/${ivy.version}/ivy-${ivy.version}.jar" dest="${ivy.jar}" />
+  </target>
+
+  <target name="init.ivy" depends="get.ivy">
+    <taskdef uri="antlib:org.apache.ivy.ant" classpath="${ivy.jar}" />
+  </target>
+
+  <target name="resolve" depends="init.ivy" description="--> retreive dependencies with ivy">
+    <ivy:retrieve />
+  </target>
+
+  <!-- build -->
+  <target name="compile" depends="init,resolve">
+    <!-- build main -->
+    <depend srcdir="${main.src}" destdir="${main.target}" cache="depcache" closure="yes" >
+      <classpath refid="main.classpath"/>
+    </depend>
+    <javac srcdir="${main.src}" destdir="${main.target}" includeAntRuntime="no"
+           debug="${debugflag}" debuglevel="lines,vars,source">
+      <compilerarg line="${javac.args}"/>
+      <classpath refid="main.classpath"/>
+    </javac>
+
+    <!-- module benchmark -->
+    <depend srcdir="${module.src}" destdir="${module.target}" cache="depcache" closure="yes" >
+      <classpath refid="module.classpath"/>
+    </depend>
+    <javac srcdir="${module.src}" destdir="${module.target}" includeAntRuntime="no"
+           debug="${debugflag}" debuglevel="lines,vars,source">
+      <compilerarg line="${javac.args}"/>
+      <classpath refid="module.classpath"/>
+    </javac>
+  </target>
+
+  <!-- clean -->
+  <target name="clean" description="Clean. Delete the build files and their directories">
+    <delete dir="${target}"/>
+  </target>
+
+  <target name="distclean" depends="clean"
+          description="Clean. Delete the most of the build files">
+    <delete dir="${ivy.lib}"/>
+  </target>
+
+  <!--- run wordcount 
+  <target name="run">
+  </target>
+-->
+
+</project>
