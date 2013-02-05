@@ -11,6 +11,6 @@
   </configurations>
 
   <dependencies>
-    <dependency org="org.msgpack" name="msgpack" rev="0.6.6" />
+    <dependency org="org.msgpack" name="msgpack" rev="0.6.7" />
   </dependencies>
 </ivy-module>

@@ -1,0 +1,11 @@
+## Build
+
+To build, then type the following command:
+
+$ ant
+
+## Run
+
+To run, then type the following command:
+
+$ ./run.sh
